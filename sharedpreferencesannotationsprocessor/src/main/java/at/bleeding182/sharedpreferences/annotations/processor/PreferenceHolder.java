@@ -157,8 +157,8 @@ public class PreferenceHolder {
                 .endConstructor();
 
         // implement SharedPreferences by just wrapping the shared preferences
-        Class<SharedPreferences> clazz = SharedPreferences.class;
-        wrapInterface(modifiersPublic, PREFERENCES, clazz.getMethods());
+        final String editorType = getName() + "Editor";
+        wrapSharedPreferencesInterface(modifiersPublic, editorType, PREFERENCES, SharedPreferences.class.getMethods());
 
         // creating accessors for the fields annotated
         for (Map.Entry<String, Preference> entry : preferences.entrySet()) {
@@ -167,7 +167,7 @@ public class PreferenceHolder {
         }
 
         // creating nested inner class for the editor
-        mWriter.emitEmptyLine().beginType(getName() + "Editor", "class", modifiersPublicStatic, null, SharedPreferences.Editor.class.getCanonicalName());
+        mWriter.emitEmptyLine().beginType(editorType, "class", modifiersPublicStatic, null, SharedPreferences.Editor.class.getCanonicalName());
         mWriter.emitEmptyLine()
                 .emitField(SharedPreferences.Editor.class.getCanonicalName(), EDITOR, modifiersFinalPrivate)
                 .emitEmptyLine();
@@ -176,10 +176,10 @@ public class PreferenceHolder {
                 SharedPreferences.Editor.class.getCanonicalName(), editor)
                 .emitStatement("this.%1$s = %2$s", EDITOR, editor)
                 .endConstructor();
-        wrapInterface(modifiersPublic, EDITOR, SharedPreferences.Editor.class.getMethods());
+        wrapEditorInterface(modifiersPublic, editorType, EDITOR, SharedPreferences.Editor.class.getMethods());
         // creating accessors for the fields annotated
         for (Map.Entry<String, Preference> entry : preferences.entrySet()) {
-            entry.getValue().writeChainSetter(mWriter, EDITOR);
+            entry.getValue().writeChainSetter(mWriter, editorType, EDITOR);
         }
         mWriter.endType();
 
@@ -187,10 +187,13 @@ public class PreferenceHolder {
         mWriter.close();
     }
 
-    private void wrapInterface(LinkedHashSet<Modifier> modifiersPublic, String wrappedElement, Method[] methods) throws IOException {
+    private void wrapSharedPreferencesInterface(LinkedHashSet<Modifier> modifiersPublic, String editor, String wrappedElement, Method[] methods) throws IOException {
         for (Method method : methods) {
             mWriter.emitEmptyLine().emitAnnotation(Override.class);
             String params = "";
+            boolean isCustomWrapperNeeded = method.getReturnType().equals(SharedPreferences.Editor.class);
+            final String retType = isCustomWrapperNeeded ?
+                    editor : method.getReturnType().getCanonicalName();
             if (method.getParameterCount() > 0) {
                 String[] parameters = new String[method.getParameterCount() * 2];
                 for (int i = 0; i < method.getParameterCount(); i++) {
@@ -200,19 +203,56 @@ public class PreferenceHolder {
                         params += ", ";
                     params += parameters[2 * i + 1];
                 }
-                mWriter.beginMethod(method.getReturnType().getCanonicalName(), method.getName(), modifiersPublic, parameters);
+                mWriter.beginMethod(retType, method.getName(), modifiersPublic, parameters);
 
             } else {
-                mWriter.beginMethod(method.getReturnType().getCanonicalName(), method.getName(), modifiersPublic);
+                mWriter.beginMethod(retType, method.getName(), modifiersPublic);
             }
 
             if (method.getReturnType().equals(void.class))
                 mWriter.emitStatement("%1$s.%2$s(%3$s)", wrappedElement, method.getName(), params);
-            else
-                mWriter.emitStatement("return %1$s.%2$s(%3$s)", wrappedElement, method.getName(), params);
+            else {
+                if (isCustomWrapperNeeded)
+                    mWriter.emitStatement("return new %1$s(%2$s.%3$s(%4$s))", editor, wrappedElement, method.getName(), params);
+                else
+                    mWriter.emitStatement("return %1$s.%2$s(%3$s)", wrappedElement, method.getName(), params);
+            }
             mWriter.endMethod();
         }
     }
+
+    private void wrapEditorInterface(LinkedHashSet<Modifier> modifiersPublic, String editor, String wrappedElement, Method[] methods) throws IOException {
+        for (Method method : methods) {
+            mWriter.emitEmptyLine().emitAnnotation(Override.class);
+            String params = "";
+            boolean isCustomWrapperNeeded = method.getReturnType().equals(SharedPreferences.Editor.class);
+            final String retType = isCustomWrapperNeeded ?
+                    editor : method.getReturnType().getCanonicalName();
+            if (method.getParameterCount() > 0) {
+                String[] parameters = new String[method.getParameterCount() * 2];
+                for (int i = 0; i < method.getParameterCount(); i++) {
+                    parameters[2 * i] = method.getParameters()[i].getType().getCanonicalName();
+                    parameters[2 * i + 1] = method.getParameters()[i].getName();
+                    if (i > 0)
+                        params += ", ";
+                    params += parameters[2 * i + 1];
+                }
+                mWriter.beginMethod(retType, method.getName(), modifiersPublic, parameters);
+
+            } else {
+                mWriter.beginMethod(retType, method.getName(), modifiersPublic);
+            }
+            if (method.getReturnType().equals(boolean.class))
+                mWriter.emitStatement("return %1$s.%2$s(%3$s)", wrappedElement, method.getName(), params);
+            else {
+                mWriter.emitStatement("%1$s.%2$s(%3$s)", wrappedElement, method.getName(), params);
+                if (!method.getReturnType().equals(void.class))
+                    mWriter.emitStatement("return this");
+            }
+            mWriter.endMethod();
+        }
+    }
+
 
     private String getName() {
         SharedPreference annotation = mElement.getAnnotation(SharedPreference.class);

@@ -117,10 +117,11 @@ public class Preference {
                 .endMethod();
     }
 
-    public void writeChainSetter(JavaWriter writer, String editor) throws IOException {
+    public void writeChainSetter(JavaWriter writer, String editorType, String editor) throws IOException {
         writer.emitEmptyLine().emitJavadoc("sets the " + mPreferenceName + " in the preferences.")
-                .beginMethod(SharedPreferences.Editor.class.getCanonicalName(), "set" + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), VALUE)
-                .emitStatement("return %1$s.put%2$s(\"%3$s\", %4$s)", editor, mType.getFullName(), mPreferenceName, VALUE)
+                .beginMethod(editorType, "set" + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), VALUE)
+                .emitStatement("%1$s.put%2$s(\"%3$s\", %4$s)", editor, mType.getFullName(), mPreferenceName, VALUE)
+                .emitStatement("return this")
                 .endMethod();
     }
 }
