@@ -183,6 +183,7 @@ public class PreferenceHolder {
         // creating accessors for the fields annotated
         for (Map.Entry<String, Preference> entry : preferences.entrySet()) {
             entry.getValue().writeGetter(mWriter);
+            entry.getValue().writeSetter(mWriter);
         }
 
         mWriter.endType();

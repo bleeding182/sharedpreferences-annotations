@@ -50,6 +50,7 @@ public class Preference {
     }
 
     private static final String DEFAULT_VALUE = "defaultValue";
+    private static final String VALUE = "value";
 
     private final VariableElement mElement;
     private final PreferenceType mType;
@@ -99,10 +100,17 @@ public class Preference {
             writer.beginMethod(mType.getReturnType(), "get" + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), DEFAULT_VALUE)
                     .emitStatement("return get%1$s(\"%2$s\", %3$s)", mType.getFullName(), mPreferenceName, DEFAULT_VALUE);
 
-        writer.endMethod();
+        writer.endMethod().emitEmptyLine();
     }
 
     public String getPreferenceNameUpperFirst() {
         return Character.toUpperCase(mPreferenceName.charAt(0)) + mPreferenceName.substring(1);
+    }
+
+    public void writeSetter(JavaWriter writer) throws IOException {
+        writer.emitJavadoc("sets the " + mPreferenceName + " in the preferences.")
+                .beginMethod("void", "set" + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), VALUE)
+                .emitStatement("edit().put%1$s(\"%2$s\", %3$s).apply()", mType.getFullName(), mPreferenceName, VALUE)
+                .endMethod().emitEmptyLine();
     }
 }
