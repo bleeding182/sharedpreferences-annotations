@@ -129,8 +129,11 @@ public class PreferenceHolder {
         modifiersFinalPrivate.add(Modifier.FINAL);
         mWriter.setIndent("    ");
         mWriter.emitPackage(getPackageName())
-                .emitImports(Override.class, Context.class, SharedPreferences.class, Set.class
-                )
+                .emitImports(Context.class, SharedPreferences.class)
+                .emitImports("android.content.SharedPreferences.Editor",
+                        "android.content.SharedPreferences.OnSharedPreferenceChangeListener")
+                .emitEmptyLine()
+                .emitImports(Set.class)
                 .emitEmptyLine()
                 .beginType(getName(), "class", modifiersPublic,
                         null, mElement.getSimpleName().toString(), "SharedPreferences")
@@ -193,18 +196,17 @@ public class PreferenceHolder {
             String params = "";
             boolean isCustomWrapperNeeded = method.getReturnType().equals(SharedPreferences.Editor.class);
             final String retType = isCustomWrapperNeeded ?
-                    editor : method.getReturnType().getCanonicalName();
+                    editor : method.getGenericReturnType().getTypeName().replace('$', '.');
             if (method.getParameterCount() > 0) {
                 String[] parameters = new String[method.getParameterCount() * 2];
                 for (int i = 0; i < method.getParameterCount(); i++) {
-                    parameters[2 * i] = method.getParameters()[i].getType().getCanonicalName();
+                    parameters[2 * i] = method.getGenericParameterTypes()[i].getTypeName().replace('$', '.');
                     parameters[2 * i + 1] = method.getParameters()[i].getName();
                     if (i > 0)
                         params += ", ";
                     params += parameters[2 * i + 1];
                 }
                 mWriter.beginMethod(retType, method.getName(), modifiersPublic, parameters);
-
             } else {
                 mWriter.beginMethod(retType, method.getName(), modifiersPublic);
             }
@@ -227,11 +229,11 @@ public class PreferenceHolder {
             String params = "";
             boolean isCustomWrapperNeeded = method.getReturnType().equals(SharedPreferences.Editor.class);
             final String retType = isCustomWrapperNeeded ?
-                    editor : method.getReturnType().getCanonicalName();
+                    editor : method.getGenericReturnType().getTypeName().replace('$', '.');
             if (method.getParameterCount() > 0) {
                 String[] parameters = new String[method.getParameterCount() * 2];
                 for (int i = 0; i < method.getParameterCount(); i++) {
-                    parameters[2 * i] = method.getParameters()[i].getType().getCanonicalName();
+                    parameters[2 * i] = method.getGenericParameterTypes()[i].getTypeName().replace('$', '.');
                     parameters[2 * i + 1] = method.getParameters()[i].getName();
                     if (i > 0)
                         params += ", ";
