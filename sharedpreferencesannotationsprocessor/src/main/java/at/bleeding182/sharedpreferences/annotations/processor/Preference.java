@@ -24,6 +24,8 @@
 
 package at.bleeding182.sharedpreferences.annotations.processor;
 
+import android.content.SharedPreferences;
+
 import com.squareup.javawriter.JavaWriter;
 
 import java.io.IOException;
@@ -35,6 +37,7 @@ import javax.lang.model.element.VariableElement;
 
 import at.bleeding182.sharedpreferences.PreferenceType;
 import at.bleeding182.sharedpreferences.annotations.DefaultValue;
+import at.bleeding182.sharedpreferences.annotations.SharedPreference;
 import at.bleeding182.sharedpreferences.annotations.Type;
 
 /**
@@ -91,7 +94,7 @@ public class Preference {
     }
 
     public void writeGetter(JavaWriter writer) throws IOException {
-        writer.emitJavadoc("gets the " + mPreferenceName + " from the preferences.");
+        writer.emitEmptyLine().emitJavadoc("gets the " + mPreferenceName + " from the preferences.");
 
         if (hasDefaultValue)
             writer.beginMethod(mType.getReturnType(), "get" + getPreferenceNameUpperFirst(), setPublic)
@@ -100,7 +103,7 @@ public class Preference {
             writer.beginMethod(mType.getReturnType(), "get" + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), DEFAULT_VALUE)
                     .emitStatement("return get%1$s(\"%2$s\", %3$s)", mType.getFullName(), mPreferenceName, DEFAULT_VALUE);
 
-        writer.endMethod().emitEmptyLine();
+        writer.endMethod();
     }
 
     public String getPreferenceNameUpperFirst() {
@@ -108,9 +111,16 @@ public class Preference {
     }
 
     public void writeSetter(JavaWriter writer) throws IOException {
-        writer.emitJavadoc("sets the " + mPreferenceName + " in the preferences.")
+        writer.emitEmptyLine().emitJavadoc("sets the " + mPreferenceName + " in the preferences.")
                 .beginMethod("void", "set" + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), VALUE)
                 .emitStatement("edit().put%1$s(\"%2$s\", %3$s).apply()", mType.getFullName(), mPreferenceName, VALUE)
-                .endMethod().emitEmptyLine();
+                .endMethod();
+    }
+
+    public void writeChainSetter(JavaWriter writer, String editor) throws IOException {
+        writer.emitEmptyLine().emitJavadoc("sets the " + mPreferenceName + " in the preferences.")
+                .beginMethod(SharedPreferences.Editor.class.getCanonicalName(), "set" + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), VALUE)
+                .emitStatement("return %1$s.put%2$s(\"%3$s\", %4$s)", editor, mType.getFullName(), mPreferenceName, VALUE)
+                .endMethod();
     }
 }

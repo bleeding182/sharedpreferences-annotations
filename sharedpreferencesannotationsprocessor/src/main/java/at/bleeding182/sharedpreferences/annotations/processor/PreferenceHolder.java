@@ -58,6 +58,7 @@ import at.bleeding182.sharedpreferences.annotations.SharedPreference;
  */
 public class PreferenceHolder {
     private static final String DEFAULT_PREFERENCES_NAME = "default_preferences";
+    private static final String EDITOR = "mEditor";
     private final TypeElement mElement;
     private final Messager mMessager;
     private final JavaWriter mWriter;
@@ -118,9 +119,12 @@ public class PreferenceHolder {
 
 
     public void write() throws IOException {
-        LinkedHashSet<Modifier> modifiers = new LinkedHashSet<>();
+        LinkedHashSet<Modifier> modifiersPublicStatic = new LinkedHashSet<>();
+        LinkedHashSet<Modifier> modifiersPublic = new LinkedHashSet<>();
         LinkedHashSet<Modifier> modifiersFinalPrivate = new LinkedHashSet<>();
-        modifiers.add(Modifier.PUBLIC);
+        modifiersPublicStatic.add(Modifier.PUBLIC);
+        modifiersPublicStatic.add(Modifier.STATIC);
+        modifiersPublic.add(Modifier.PUBLIC);
         modifiersFinalPrivate.add(Modifier.PRIVATE);
         modifiersFinalPrivate.add(Modifier.FINAL);
         mWriter.setIndent("    ");
@@ -128,7 +132,7 @@ public class PreferenceHolder {
                 .emitImports(Override.class, Context.class, SharedPreferences.class, Set.class
                 )
                 .emitEmptyLine()
-                .beginType(getName(), "class", modifiers,
+                .beginType(getName(), "class", modifiersPublic,
                         null, mElement.getSimpleName().toString(), "SharedPreferences")
                 .emitEmptyLine();
 
@@ -138,7 +142,7 @@ public class PreferenceHolder {
         // default constructor with context using default preferences name
         mWriter.emitJavadoc("constructor using '%1$s' for the preferences name.\n@param %2$s the context to use",
                 preferencesName, CONTEXT)
-                .beginConstructor(modifiers, "Context", CONTEXT)
+                .beginConstructor(modifiersPublic, "Context", CONTEXT)
                 .emitStatement("this(%1$s, %2$s)",
                         CONTEXT, "\"" + preferencesName + "\"")
                 .endConstructor()
@@ -147,16 +151,45 @@ public class PreferenceHolder {
         // constructor with name for preferences
         mWriter.emitJavadoc("constructor using <i>%2$s</i> for the preferences name.\n@param %3$s the context to use\n@param %2$s the name for the preferences",
                 preferencesName, PAR_NAME, CONTEXT)
-                .beginConstructor(modifiers, "Context", CONTEXT, "String", PAR_NAME)
+                .beginConstructor(modifiersPublic, "Context", CONTEXT, "String", PAR_NAME)
                 .emitStatement("this.%1s = %2$s.getSharedPreferences(%3$s, %2$s.MODE_PRIVATE)",
                         PREFERENCES, CONTEXT, PAR_NAME)
-                .endConstructor()
-                .emitEmptyLine();
+                .endConstructor();
 
         // implement SharedPreferences by just wrapping the shared preferences
         Class<SharedPreferences> clazz = SharedPreferences.class;
-        for (Method method : clazz.getMethods()) {
-            mWriter.emitAnnotation(Override.class);
+        wrapInterface(modifiersPublic, PREFERENCES, clazz.getMethods());
+
+        // creating accessors for the fields annotated
+        for (Map.Entry<String, Preference> entry : preferences.entrySet()) {
+            entry.getValue().writeGetter(mWriter);
+            entry.getValue().writeSetter(mWriter);
+        }
+
+        // creating nested inner class for the editor
+        mWriter.emitEmptyLine().beginType(getName() + "Editor", "class", modifiersPublicStatic, null, SharedPreferences.Editor.class.getCanonicalName());
+        mWriter.emitEmptyLine()
+                .emitField(SharedPreferences.Editor.class.getCanonicalName(), EDITOR, modifiersFinalPrivate)
+                .emitEmptyLine();
+        final String editor = "editor";
+        mWriter.beginConstructor(modifiersPublic,
+                SharedPreferences.Editor.class.getCanonicalName(), editor)
+                .emitStatement("this.%1$s = %2$s", EDITOR, editor)
+                .endConstructor();
+        wrapInterface(modifiersPublic, EDITOR, SharedPreferences.Editor.class.getMethods());
+        // creating accessors for the fields annotated
+        for (Map.Entry<String, Preference> entry : preferences.entrySet()) {
+            entry.getValue().writeChainSetter(mWriter, EDITOR);
+        }
+        mWriter.endType();
+
+        mWriter.endType();
+        mWriter.close();
+    }
+
+    private void wrapInterface(LinkedHashSet<Modifier> modifiersPublic, String wrappedElement, Method[] methods) throws IOException {
+        for (Method method : methods) {
+            mWriter.emitEmptyLine().emitAnnotation(Override.class);
             String params = "";
             if (method.getParameterCount() > 0) {
                 String[] parameters = new String[method.getParameterCount() * 2];
@@ -167,27 +200,18 @@ public class PreferenceHolder {
                         params += ", ";
                     params += parameters[2 * i + 1];
                 }
-                mWriter.beginMethod(method.getReturnType().getCanonicalName(), method.getName(), modifiers, parameters);
+                mWriter.beginMethod(method.getReturnType().getCanonicalName(), method.getName(), modifiersPublic, parameters);
 
             } else {
-                mWriter.beginMethod(method.getReturnType().getCanonicalName(), method.getName(), modifiers);
+                mWriter.beginMethod(method.getReturnType().getCanonicalName(), method.getName(), modifiersPublic);
             }
 
             if (method.getReturnType().equals(void.class))
-                mWriter.emitStatement("%1$s.%2$s(%3$s)", PREFERENCES, method.getName(), params);
+                mWriter.emitStatement("%1$s.%2$s(%3$s)", wrappedElement, method.getName(), params);
             else
-                mWriter.emitStatement("return %1$s.%2$s(%3$s)", PREFERENCES, method.getName(), params);
-            mWriter.endMethod().emitEmptyLine();
+                mWriter.emitStatement("return %1$s.%2$s(%3$s)", wrappedElement, method.getName(), params);
+            mWriter.endMethod();
         }
-
-        // creating accessors for the fields annotated
-        for (Map.Entry<String, Preference> entry : preferences.entrySet()) {
-            entry.getValue().writeGetter(mWriter);
-            entry.getValue().writeSetter(mWriter);
-        }
-
-        mWriter.endType();
-        mWriter.close();
     }
 
     private String getName() {
