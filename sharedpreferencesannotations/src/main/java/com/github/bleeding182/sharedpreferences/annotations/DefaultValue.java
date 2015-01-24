@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package at.bleeding182.sharedpreferences.annotations;
+package com.github.bleeding182.sharedpreferences.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -22,9 +22,7 @@
  * SOFTWARE.
  */
 
-package at.bleeding182.sharedpreferences.annotations.processor;
-
-import com.squareup.javawriter.JavaWriter;
+package com.github.bleeding182.sharedpreferences.annotations.processor;
 
 import java.io.IOException;
 import java.util.Set;
@@ -35,15 +33,13 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
 
-import at.bleeding182.sharedpreferences.annotations.SharedPreference;
+import com.github.bleeding182.sharedpreferences.annotations.SharedPreference;
 
 
-@SupportedAnnotationTypes("at.bleeding182.sharedpreferences.annotations.SharedPreference")
+@SupportedAnnotationTypes("com.github.bleeding182.sharedpreferences.annotations.SharedPreference")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class SharedPreferencesAnnotationProcessor extends AbstractProcessor {
 

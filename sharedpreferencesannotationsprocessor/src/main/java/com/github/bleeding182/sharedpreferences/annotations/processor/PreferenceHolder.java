@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package at.bleeding182.sharedpreferences.annotations.processor;
+package com.github.bleeding182.sharedpreferences.annotations.processor;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -47,10 +47,10 @@ import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
-import at.bleeding182.sharedpreferences.PreferenceType;
-import at.bleeding182.sharedpreferences.annotations.DefaultPreferenceName;
-import at.bleeding182.sharedpreferences.annotations.DefaultPreferenceType;
-import at.bleeding182.sharedpreferences.annotations.SharedPreference;
+import com.github.bleeding182.sharedpreferences.PreferenceType;
+import com.github.bleeding182.sharedpreferences.annotations.DefaultPreferenceName;
+import com.github.bleeding182.sharedpreferences.annotations.DefaultPreferenceType;
+import com.github.bleeding182.sharedpreferences.annotations.SharedPreference;
 
 /**
  * @author David Medenjak

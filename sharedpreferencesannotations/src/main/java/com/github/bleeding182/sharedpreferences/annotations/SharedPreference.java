@@ -22,23 +22,19 @@
  * SOFTWARE.
  */
 
-package at.bleeding182.sharedpreferences.annotations;
+package com.github.bleeding182.sharedpreferences.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import at.bleeding182.sharedpreferences.PreferenceType;
-
 /**
- * Class to set the default type for preferences when not explicitly set.
- *
- * @author David Medenjak
- * @version 1.0
+ * Used to generate a default wrapper class for the selected interface.
  */
+
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-public @interface DefaultPreferenceType {
-    PreferenceType value();
+public @interface SharedPreference {
+    String value() default "";
 }

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package at.bleeding182.sharedpreferences.annotations;
+package com.github.bleeding182.sharedpreferences.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -30,11 +30,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to generate a default wrapper class for the selected interface.
+ * Used to set the default name of the SharedPreferences used by getSharedPreferences(NAME, int)
  */
 
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-public @interface SharedPreference {
-    String value() default "";
+public @interface DefaultPreferenceName {
+    String value();
 }

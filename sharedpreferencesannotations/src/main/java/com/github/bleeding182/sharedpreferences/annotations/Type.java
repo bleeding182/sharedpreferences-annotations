@@ -22,53 +22,21 @@
  * SOFTWARE.
  */
 
-package at.bleeding182.sharedpreferences;
+package com.github.bleeding182.sharedpreferences.annotations;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import com.github.bleeding182.sharedpreferences.PreferenceType;
 
 /**
  * @author David Medenjak
  * @version 1.0
  */
-public enum PreferenceType {
-    BOOLEAN,
-    FLOAT,
-    INTEGER,
-    LONG,
-    STRING,
-    STRING_SET;
-
-    public String getReturnType() {
-        switch (this) {
-            case BOOLEAN:
-                return "boolean";
-            case FLOAT:
-                return "float";
-            case INTEGER:
-                return "int";
-            case LONG:
-                return "long";
-            case STRING:
-                return "String";
-            case STRING_SET:
-                return "Set<String>";
-        }
-        return "Object";
-    }
-
-    public String getFullName() {
-        switch (this) {
-            case BOOLEAN:
-                return "Boolean";
-            case FLOAT:
-                return "Float";
-            case INTEGER:
-                return "Int";
-            case LONG:
-                return "Long";
-            case STRING:
-                return "String";
-            case STRING_SET:
-                return "StringSet";
-        }
-        return "Object";
-    }
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.FIELD)
+public @interface Type {
+    PreferenceType value();
 }

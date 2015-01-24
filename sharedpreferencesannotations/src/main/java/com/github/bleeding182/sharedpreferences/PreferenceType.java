@@ -22,19 +22,53 @@
  * SOFTWARE.
  */
 
-package at.bleeding182.sharedpreferences.annotations;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package com.github.bleeding182.sharedpreferences;
 
 /**
- * Used to set the default name of the SharedPreferences used by getSharedPreferences(NAME, int)
+ * @author David Medenjak
+ * @version 1.0
  */
+public enum PreferenceType {
+    BOOLEAN,
+    FLOAT,
+    INTEGER,
+    LONG,
+    STRING,
+    STRING_SET;
 
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.TYPE)
-public @interface DefaultPreferenceName {
-    String value();
+    public String getReturnType() {
+        switch (this) {
+            case BOOLEAN:
+                return "boolean";
+            case FLOAT:
+                return "float";
+            case INTEGER:
+                return "int";
+            case LONG:
+                return "long";
+            case STRING:
+                return "String";
+            case STRING_SET:
+                return "Set<String>";
+        }
+        return "Object";
+    }
+
+    public String getFullName() {
+        switch (this) {
+            case BOOLEAN:
+                return "Boolean";
+            case FLOAT:
+                return "Float";
+            case INTEGER:
+                return "Int";
+            case LONG:
+                return "Long";
+            case STRING:
+                return "String";
+            case STRING_SET:
+                return "StringSet";
+        }
+        return "Object";
+    }
 }
