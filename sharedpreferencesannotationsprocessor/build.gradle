@@ -38,7 +38,7 @@ dependencies {
 }
 
 group = 'com.github.bleeding182.sharedpreferences'
-version = '0.0.1'
+version = '1.0.0-rc.1'
 
 publishing {
     publications {

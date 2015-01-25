@@ -24,16 +24,17 @@
 
 package com.github.bleeding182.sharedpreferences.annotations;
 
+import com.github.bleeding182.sharedpreferences.PreferenceType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.github.bleeding182.sharedpreferences.PreferenceType;
-
 /**
- * Set the default type for the properties.
- * To use a custom type annotate properties with {@link com.github.bleeding182.sharedpreferences.annotations.Type}.
+ * Set the default type for all the contained properties in the interface if not specified.
+ * To use a different type for a single property
+ * annotate the properties with {@link com.github.bleeding182.sharedpreferences.annotations.Type}.
  *
  * @author David Medenjak
  * @version 1.0
@@ -41,5 +42,10 @@ import com.github.bleeding182.sharedpreferences.PreferenceType;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface DefaultPreferenceType {
+    /**
+     * The default type to use for properties if not specified.
+     *
+     * @return the default type.
+     */
     PreferenceType value();
 }

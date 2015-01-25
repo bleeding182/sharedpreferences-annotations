@@ -24,15 +24,17 @@
 
 package com.github.bleeding182.sharedpreferences.annotations;
 
+import com.github.bleeding182.sharedpreferences.PreferenceType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.github.bleeding182.sharedpreferences.PreferenceType;
-
 /**
- * Set the type of the property. Supported types are of {@link com.github.bleeding182.sharedpreferences.PreferenceType}
+ * The preferences type of this single property.
+ * The getter and setter will be genereated with the supplied type.<br/>
+ * Supported types are of {@link com.github.bleeding182.sharedpreferences.PreferenceType}
  *
  * @author David Medenjak
  * @version 1.0
@@ -40,6 +42,17 @@ import com.github.bleeding182.sharedpreferences.PreferenceType;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.FIELD)
 public @interface Type {
+    /**
+     * the type of the preference element.
+     *
+     * @return the type
+     */
     PreferenceType value();
+
+    /**
+     * <b>if</b> the type is a boolean, you can set the getter prefix here.
+     *
+     * @return the prefix for the getter, "is" by default.
+     */
     String booleanPrefix() default "is";
 }

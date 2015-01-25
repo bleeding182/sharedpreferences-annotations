@@ -30,11 +30,22 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Desired preferences file to be used.
+ * Default name of the preferences file.<br/>
+ * Used to set the default name for the preferences file
+ * using the <em>new Prefs(Context ctx)</em> constructor.
+ *
+ * <p>This annotation is entirely optional, as you can call
+ * <em>new Prefs(Context ctx, String preferenceName)</em> too.</p>
+ *
+ * <p>Probable use for using the same preference file on multiple locations.</p>
  */
 
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface DefaultPreferenceName {
+    /**
+     * Set the name of the preferences file.
+     * @return the name of the file.
+     */
     String value();
 }
