@@ -40,7 +40,6 @@ import java.util.TreeMap;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -57,31 +56,45 @@ import com.github.bleeding182.sharedpreferences.annotations.SharedPreference;
  * @version 1.0
  */
 public class PreferenceHolder {
-    private static final String DEFAULT_PREFERENCES_NAME = "default_preferences";
-    private static final String EDITOR = "mEditor";
-    private final TypeElement mElement;
-    private final Messager mMessager;
-    private final JavaWriter mWriter;
-    private final String preferencesName;
-
-    private final static String CONTEXT = "ctx";
+    private final static String PAR_CONTEXT = "ctx";
     private final static String PAR_NAME = "name";
-    private final static String PREFERENCES = "mPreferences";
+    private final static String PAR_EDITOR = "editor";
 
-    private final SortedMap<String, Preference> preferences;
+    private final static String PREFERENCES = "mPreferences";
+    private static final String EDITOR = "mEditor";
+
+    private static final String DEFAULT_PREFERENCES_NAME = "default_preferences";
+
+    private final TypeElement mElement;
+    private final JavaWriter mWriter;
+
+    private final String preferencesName;
+    private final String className;
+    private final String editorName;
+
+    private final SortedMap<String, Preference> preferences = new TreeMap<>();
+
 
     public PreferenceHolder(TypeElement element, Filer filer, Messager messager) throws IOException {
         this.mElement = element;
-        mMessager = messager;
-        JavaFileObject jfo = filer.createSourceFile(getPackageName() + "." + getName());
+
+        // Set the name of the file / class and nested editor
+        SharedPreference sharedPreference = mElement.getAnnotation(SharedPreference.class);
+        final String name = (sharedPreference.value().isEmpty()) ? mElement.getSimpleName().toString()
+                : sharedPreference.value();
+        className = name + sharedPreference.preferencesSuffix();
+        editorName = name + sharedPreference.editorSuffix();
+        JavaFileObject jfo = filer.createSourceFile(getPackageName() + "." + className);
         this.mWriter = new JavaWriter(jfo.openWriter());
 
+        // set the name of the sharedPreferences created with the context
         DefaultPreferenceName defName = element.getAnnotation(DefaultPreferenceName.class);
         if (defName != null)
             preferencesName = defName.value();
         else
             preferencesName = DEFAULT_PREFERENCES_NAME;
 
+        // default type if not specified
         DefaultPreferenceType defType = element.getAnnotation(DefaultPreferenceType.class);
         final PreferenceType defaultPreferenceType;
         if (defType != null)
@@ -89,7 +102,7 @@ public class PreferenceHolder {
         else
             defaultPreferenceType = null;
 
-        preferences = new TreeMap<>();
+        Set<String> preferenceIds = new LinkedHashSet<>();
         for (Element e : element.getEnclosedElements()) {
             if (!e.getKind().isField()) {
                 messager.printMessage(Diagnostic.Kind.WARNING, e.getSimpleName() + " is not a field", e);
@@ -97,71 +110,73 @@ public class PreferenceHolder {
             }
             VariableElement var = (VariableElement) e;
             if (!var.asType().toString().equals("java.lang.String")) {
-                messager.printMessage(Diagnostic.Kind.ERROR, var.asType().toString() + " is not of type String", e);
+                messager.printMessage(Diagnostic.Kind.WARNING, var.asType().toString() + " is not of type String", e);
                 continue;
             }
             if (var.getConstantValue() == null) {
                 messager.printMessage(Diagnostic.Kind.ERROR, var.getSimpleName() + " is not final or no value is set", e);
                 continue;
             }
-            final String preferenceName = Preference.camelCaseName(var.getConstantValue().toString());
+
+            final String preferenceName = Preference.camelCaseName(var.getSimpleName().toString());
             Preference old = preferences.get(preferenceName);
             if (old != null) {
                 messager.printMessage(Diagnostic.Kind.WARNING, preferenceName + " used here is ignored", var);
                 messager.printMessage(Diagnostic.Kind.WARNING, "because it was already defined here", old.getElement());
                 continue;
-            } else {
-                preferences.put(preferenceName, new Preference(preferenceName, var, defaultPreferenceType));
             }
-
+            final String id = var.getConstantValue().toString();
+            if(!preferenceIds.add(id))
+                messager.printMessage(Diagnostic.Kind.WARNING, "preference id " + id + " is already in use");
+            preferences.put(preferenceName, new Preference(preferenceName, id, var, defaultPreferenceType));
         }
     }
 
-
     public void write() throws IOException {
-        LinkedHashSet<Modifier> modifiersPublicStatic = new LinkedHashSet<>();
-        LinkedHashSet<Modifier> modifiersPublic = new LinkedHashSet<>();
-        LinkedHashSet<Modifier> modifiersFinalPrivate = new LinkedHashSet<>();
-        modifiersPublicStatic.add(Modifier.PUBLIC);
-        modifiersPublicStatic.add(Modifier.STATIC);
-        modifiersPublic.add(Modifier.PUBLIC);
-        modifiersFinalPrivate.add(Modifier.PRIVATE);
-        modifiersFinalPrivate.add(Modifier.FINAL);
         mWriter.setIndent("    ");
         mWriter.emitPackage(getPackageName())
+                .emitSingleLineComment("generated code, do not modify")
+                .emitSingleLineComment("for more information see https://github.com/bleeding182/sharedpreferences-annotations")
+                .emitEmptyLine()
                 .emitImports(Context.class, SharedPreferences.class)
                 .emitImports("android.content.SharedPreferences.Editor",
                         "android.content.SharedPreferences.OnSharedPreferenceChangeListener")
                 .emitEmptyLine()
                 .emitImports(Set.class)
                 .emitEmptyLine()
-                .beginType(getName(), "class", modifiersPublic,
+                .beginType(className, "class", Modifier.PUBLIC,
                         null, mElement.getSimpleName().toString(), "SharedPreferences")
                 .emitEmptyLine();
 
-        mWriter.emitField("SharedPreferences", PREFERENCES, modifiersFinalPrivate)
+        mWriter.emitField("SharedPreferences", PREFERENCES, Modifier.PRIVATE_FINAL)
                 .emitEmptyLine();
 
         // default constructor with context using default preferences name
         mWriter.emitJavadoc("constructor using '%1$s' for the preferences name.\n@param %2$s the context to use",
-                preferencesName, CONTEXT)
-                .beginConstructor(modifiersPublic, "Context", CONTEXT)
+                preferencesName, PAR_CONTEXT)
+                .beginConstructor(Modifier.PUBLIC, "Context", PAR_CONTEXT)
                 .emitStatement("this(%1$s, %2$s)",
-                        CONTEXT, "\"" + preferencesName + "\"")
+                        PAR_CONTEXT, "\"" + preferencesName + "\"")
                 .endConstructor()
                 .emitEmptyLine();
 
         // constructor with name for preferences
         mWriter.emitJavadoc("constructor using <i>%2$s</i> for the preferences name.\n@param %3$s the context to use\n@param %2$s the name for the preferences",
-                preferencesName, PAR_NAME, CONTEXT)
-                .beginConstructor(modifiersPublic, "Context", CONTEXT, "String", PAR_NAME)
+                preferencesName, PAR_NAME, PAR_CONTEXT)
+                .beginConstructor(Modifier.PUBLIC, "Context", PAR_CONTEXT, "String", PAR_NAME)
                 .emitStatement("this.%1s = %2$s.getSharedPreferences(%3$s, %2$s.MODE_PRIVATE)",
-                        PREFERENCES, CONTEXT, PAR_NAME)
+                        PREFERENCES, PAR_CONTEXT, PAR_NAME)
+                .endConstructor();
+
+        // constructor with preferences
+        mWriter.emitJavadoc("constructor using the supplied SharedPreferences\n@param %1$s the SharedPreferences to use\n", "preferences")
+                .beginConstructor(Modifier.PUBLIC, "SharedPreferences", "preferences")
+                .emitStatement("this.%1s = preferences",
+                        PREFERENCES, "preferences")
                 .endConstructor();
 
         // implement SharedPreferences by just wrapping the shared preferences
-        final String editorType = getName() + "Editor";
-        wrapSharedPreferencesInterface(modifiersPublic, editorType, PREFERENCES, SharedPreferences.class.getMethods());
+        wrapSharedPreferencesInterface(Modifier.PUBLIC, editorName, PREFERENCES, SharedPreferences.class.getMethods());
 
         // creating accessors for the fields annotated
         for (Map.Entry<String, Preference> entry : preferences.entrySet()) {
@@ -170,19 +185,18 @@ public class PreferenceHolder {
         }
 
         // creating nested inner class for the editor
-        mWriter.emitEmptyLine().beginType(editorType, "class", modifiersPublicStatic, null, SharedPreferences.Editor.class.getCanonicalName());
+        mWriter.emitEmptyLine().beginType(editorName, "class", Modifier.PUBLIC_STATIC, null, SharedPreferences.Editor.class.getCanonicalName());
         mWriter.emitEmptyLine()
-                .emitField(SharedPreferences.Editor.class.getCanonicalName(), EDITOR, modifiersFinalPrivate)
+                .emitField(SharedPreferences.Editor.class.getCanonicalName(), EDITOR, Modifier.PRIVATE_FINAL)
                 .emitEmptyLine();
-        final String editor = "editor";
-        mWriter.beginConstructor(modifiersPublic,
-                SharedPreferences.Editor.class.getCanonicalName(), editor)
-                .emitStatement("this.%1$s = %2$s", EDITOR, editor)
+        mWriter.beginConstructor(Modifier.PUBLIC,
+                SharedPreferences.Editor.class.getCanonicalName(), PAR_EDITOR)
+                .emitStatement("this.%1$s = %2$s", EDITOR, PAR_EDITOR)
                 .endConstructor();
-        wrapEditorInterface(modifiersPublic, editorType, EDITOR, SharedPreferences.Editor.class.getMethods());
+        wrapEditorInterface(Modifier.PUBLIC, editorName, EDITOR, SharedPreferences.Editor.class.getMethods());
         // creating accessors for the fields annotated
         for (Map.Entry<String, Preference> entry : preferences.entrySet()) {
-            entry.getValue().writeChainSetter(mWriter, editorType, EDITOR);
+            entry.getValue().writeChainSetter(mWriter, editorName, EDITOR);
         }
         mWriter.endType();
 
@@ -190,7 +204,7 @@ public class PreferenceHolder {
         mWriter.close();
     }
 
-    private void wrapSharedPreferencesInterface(LinkedHashSet<Modifier> modifiersPublic, String editor, String wrappedElement, Method[] methods) throws IOException {
+    private void wrapSharedPreferencesInterface(Set<javax.lang.model.element.Modifier> modifiersPublic, String editor, String wrappedElement, Method[] methods) throws IOException {
         for (Method method : methods) {
             mWriter.emitEmptyLine().emitAnnotation(Override.class);
             String params = "";
@@ -223,7 +237,7 @@ public class PreferenceHolder {
         }
     }
 
-    private void wrapEditorInterface(LinkedHashSet<Modifier> modifiersPublic, String editor, String wrappedElement, Method[] methods) throws IOException {
+    private void wrapEditorInterface(Set<javax.lang.model.element.Modifier> modifiersPublic, String editor, String wrappedElement, Method[] methods) throws IOException {
         for (Method method : methods) {
             mWriter.emitEmptyLine().emitAnnotation(Override.class);
             String params = "";
@@ -256,13 +270,6 @@ public class PreferenceHolder {
     }
 
 
-    private String getName() {
-        SharedPreference annotation = mElement.getAnnotation(SharedPreference.class);
-        if (annotation == null || annotation.value().isEmpty() || annotation.value().equals(mElement.getSimpleName().toString()))
-            return mElement.getSimpleName().toString() + "Holder";
-        return annotation.value();
-    }
-
     public String getPackageName() {
         Element enclosingElement = mElement.getEnclosingElement();
         if (enclosingElement != null && enclosingElement instanceof PackageElement) {
@@ -270,4 +277,5 @@ public class PreferenceHolder {
         }
         return "";
     }
+
 }

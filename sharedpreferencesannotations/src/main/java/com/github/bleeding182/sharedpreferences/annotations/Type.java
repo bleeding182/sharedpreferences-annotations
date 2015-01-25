@@ -32,6 +32,8 @@ import java.lang.annotation.Target;
 import com.github.bleeding182.sharedpreferences.PreferenceType;
 
 /**
+ * Set the type of the property. Supported types are of {@link com.github.bleeding182.sharedpreferences.PreferenceType}
+ *
  * @author David Medenjak
  * @version 1.0
  */
@@ -39,4 +41,5 @@ import com.github.bleeding182.sharedpreferences.PreferenceType;
 @Target(ElementType.FIELD)
 public @interface Type {
     PreferenceType value();
+    String booleanPrefix() default "is";
 }

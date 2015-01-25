@@ -47,16 +47,20 @@ public class SharedPreferencesAnnotationProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations,
                            RoundEnvironment roundEnv) {
         for (Element e : roundEnv.getElementsAnnotatedWith(SharedPreference.class)) {
-            if (!e.getKind().isInterface()) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Just annotated interfaces are supported.", e);
+            if (e.getKind().isField()) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Just interfaces annotated by @SharedPreference are supported.", e);
                 continue;
             }
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Processing " + e.getSimpleName());
-            PreferenceHolder prefHolder = null;
+            if (e.getKind().isClass()) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "Just interfaces annotated by @SharedPreference are supported.", e);
+            }
+            PreferenceHolder prefHolder;
             try {
                 prefHolder = new PreferenceHolder((TypeElement) e, processingEnv.getFiler(), processingEnv.getMessager());
                 prefHolder.write();
             } catch (IOException ex) {
+                ex.printStackTrace();
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, ex.getMessage(), e);
             }
         }
         return true;

@@ -25,6 +25,14 @@
 package com.github.bleeding182.sharedpreferences;
 
 /**
+ * Usable types of the properties. <br/>
+ * BOOLEAN <br/>
+ * FLOAT <br/>
+ * INTEGER <br/>
+ * LONG <br/>
+ * STRING <br/>
+ * STRING_SET
+ *
  * @author David Medenjak
  * @version 1.0
  */

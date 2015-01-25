@@ -32,7 +32,8 @@ import java.lang.annotation.Target;
 import com.github.bleeding182.sharedpreferences.PreferenceType;
 
 /**
- * Class to set the default type for preferences when not explicitly set.
+ * Set the default type for the properties.
+ * To use a custom type annotate properties with {@link com.github.bleeding182.sharedpreferences.annotations.Type}.
  *
  * @author David Medenjak
  * @version 1.0

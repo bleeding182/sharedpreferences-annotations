@@ -30,7 +30,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to set the default name of the SharedPreferences used by getSharedPreferences(NAME, int)
+ * Desired preferences file to be used.
  */
 
 @Retention(RetentionPolicy.SOURCE)

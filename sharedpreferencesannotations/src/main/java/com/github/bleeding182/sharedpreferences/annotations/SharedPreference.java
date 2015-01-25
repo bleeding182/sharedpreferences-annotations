@@ -30,11 +30,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to generate a default wrapper class for the selected interface.
+ * Used to generate a default wrapper class for the selected interface. Supply a String value
+ * to change the class names to <i>value</i>Prefs and <i>value</i>Editor. The name of the interface
+ * is default.
  */
 
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface SharedPreference {
     String value() default "";
+    String preferencesSuffix() default "Prefs";
+    String editorSuffix() default "Editor";
 }

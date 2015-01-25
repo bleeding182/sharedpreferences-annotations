@@ -1,3 +1,5 @@
+***This library is currently a work in progress, busy working on v1.0.0***
+
 # Shared Preferences Annotations
 This library is an Annotation Processor for creating a simple wrapper class around SharedPreferences for Android.
 
