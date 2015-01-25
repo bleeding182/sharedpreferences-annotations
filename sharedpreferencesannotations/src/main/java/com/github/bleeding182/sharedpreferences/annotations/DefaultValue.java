@@ -30,7 +30,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to set the default value for this preference.
+ * Used to set the default value for this preference and omitting the default getter. By setting {@link #createDefaultGetter} to <b>false</b> you
+ * can suppress the additional getter of the form <em>get(Type defaultValue)</em>.
  *
  * @author David Medenjak
  * @version 1.0
@@ -38,5 +39,15 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.FIELD)
 public @interface DefaultValue {
+    /**
+     * Supplies the default value to use for a preference in String format. e.g. "3.0f", "hi", ...
+     * @return the value to use as String.
+     */
     String value();
+
+    /**
+     * Used to specify the creation of the default getter of the form <em>get(Type defaultValue)</em>.
+     * @return default true, to create the default getter nonetheless.
+     */
+    boolean createDefaultGetter() default true;
 }

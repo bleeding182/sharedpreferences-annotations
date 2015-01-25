@@ -148,6 +148,7 @@ public class PreferenceHolder {
                         null, mElement.getSimpleName().toString(), "SharedPreferences")
                 .emitEmptyLine();
 
+        mWriter.emitField("String", "PREFERENCES_NAME", Modifier.PUBLIC_FINAL_STATIC, "\"" + preferencesName + "\"");
         mWriter.emitField("SharedPreferences", PREFERENCES, Modifier.PRIVATE_FINAL)
                 .emitEmptyLine();
 
@@ -156,12 +157,13 @@ public class PreferenceHolder {
                 preferencesName, PAR_CONTEXT)
                 .beginConstructor(Modifier.PUBLIC, "Context", PAR_CONTEXT)
                 .emitStatement("this(%1$s, %2$s)",
-                        PAR_CONTEXT, "\"" + preferencesName + "\"")
+                        PAR_CONTEXT, "PREFERENCES_NAME")
                 .endConstructor()
                 .emitEmptyLine();
 
         // constructor with name for preferences
-        mWriter.emitJavadoc("constructor using <i>%2$s</i> for the preferences name.\n@param %3$s the context to use\n@param %2$s the name for the preferences",
+        mWriter.emitJavadoc("constructor using <i>%2$s</i> for the preferences name.<br/>\n<i>It is strongly advised against using it, unless you know what you're doing.</i>\n" +
+                        "@param %3$s the context to use\n@param %2$s the name for the preferences",
                 preferencesName, PAR_NAME, PAR_CONTEXT)
                 .beginConstructor(Modifier.PUBLIC, "Context", PAR_CONTEXT, "String", PAR_NAME)
                 .emitStatement("this.%1s = %2$s.getSharedPreferences(%3$s, %2$s.MODE_PRIVATE)",
@@ -207,23 +209,8 @@ public class PreferenceHolder {
     private void wrapSharedPreferencesInterface(Set<javax.lang.model.element.Modifier> modifiersPublic, String editor, String wrappedElement, Method[] methods) throws IOException {
         for (Method method : methods) {
             mWriter.emitEmptyLine().emitAnnotation(Override.class);
-            String params = "";
             boolean isCustomWrapperNeeded = method.getReturnType().equals(SharedPreferences.Editor.class);
-            final String retType = isCustomWrapperNeeded ?
-                    editor : method.getGenericReturnType().getTypeName().replace('$', '.');
-            if (method.getParameterCount() > 0) {
-                String[] parameters = new String[method.getParameterCount() * 2];
-                for (int i = 0; i < method.getParameterCount(); i++) {
-                    parameters[2 * i] = method.getGenericParameterTypes()[i].getTypeName().replace('$', '.');
-                    parameters[2 * i + 1] = method.getParameters()[i].getName();
-                    if (i > 0)
-                        params += ", ";
-                    params += parameters[2 * i + 1];
-                }
-                mWriter.beginMethod(retType, method.getName(), modifiersPublic, parameters);
-            } else {
-                mWriter.beginMethod(retType, method.getName(), modifiersPublic);
-            }
+            final String params = beginMethod(modifiersPublic, editor, method, isCustomWrapperNeeded);
 
             if (method.getReturnType().equals(void.class))
                 mWriter.emitStatement("%1$s.%2$s(%3$s)", wrappedElement, method.getName(), params);
@@ -240,24 +227,9 @@ public class PreferenceHolder {
     private void wrapEditorInterface(Set<javax.lang.model.element.Modifier> modifiersPublic, String editor, String wrappedElement, Method[] methods) throws IOException {
         for (Method method : methods) {
             mWriter.emitEmptyLine().emitAnnotation(Override.class);
-            String params = "";
             boolean isCustomWrapperNeeded = method.getReturnType().equals(SharedPreferences.Editor.class);
-            final String retType = isCustomWrapperNeeded ?
-                    editor : method.getGenericReturnType().getTypeName().replace('$', '.');
-            if (method.getParameterCount() > 0) {
-                String[] parameters = new String[method.getParameterCount() * 2];
-                for (int i = 0; i < method.getParameterCount(); i++) {
-                    parameters[2 * i] = method.getGenericParameterTypes()[i].getTypeName().replace('$', '.');
-                    parameters[2 * i + 1] = method.getParameters()[i].getName();
-                    if (i > 0)
-                        params += ", ";
-                    params += parameters[2 * i + 1];
-                }
-                mWriter.beginMethod(retType, method.getName(), modifiersPublic, parameters);
+            final String params = beginMethod(modifiersPublic, editor, method, isCustomWrapperNeeded);
 
-            } else {
-                mWriter.beginMethod(retType, method.getName(), modifiersPublic);
-            }
             if (method.getReturnType().equals(boolean.class))
                 mWriter.emitStatement("return %1$s.%2$s(%3$s)", wrappedElement, method.getName(), params);
             else {
@@ -267,6 +239,26 @@ public class PreferenceHolder {
             }
             mWriter.endMethod();
         }
+    }
+
+    private String beginMethod(Set<javax.lang.model.element.Modifier> modifiersPublic, String editor, Method method, boolean isCustomWrapperNeeded) throws IOException {
+        String params = "";
+        final String retType = isCustomWrapperNeeded ?
+                editor : method.getGenericReturnType().getTypeName().replace('$', '.');
+        if (method.getParameterCount() > 0) {
+            String[] parameters = new String[method.getParameterCount() * 2];
+            for (int i = 0; i < method.getParameterCount(); i++) {
+                parameters[2 * i] = method.getGenericParameterTypes()[i].getTypeName().replace('$', '.');
+                parameters[2 * i + 1] = method.getParameters()[i].getName();
+                if (i > 0)
+                    params += ", ";
+                params += parameters[2 * i + 1];
+            }
+            mWriter.beginMethod(retType, method.getName(), modifiersPublic, parameters);
+        } else {
+            mWriter.beginMethod(retType, method.getName(), modifiersPublic);
+        }
+        return params;
     }
 
 
