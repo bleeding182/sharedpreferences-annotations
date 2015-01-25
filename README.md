@@ -1,38 +1,71 @@
 ***This library is currently a work in progress, busy working on v1.0.0***
 
 # Shared Preferences Annotations
-This library is an Annotation Processor for creating a simple wrapper class around SharedPreferences for Android.
-
-This project is published under *MIT License*. For more information see `LICENSE`.
-
-## Modules
-The  library consists of 2 modules, one containing the Annotations, the other containing the Annotation Processor,
-so that unnecessary files don't get compiled with the rest.
+This library is used to create a simple wrapper class around SharedPreferences for Android,
+supporting custom accessor methods by using an annotation processor.
 
 ## Functions
-All of `SharedPreferences` data types are supported and can be used. Dynamic values can still be used, as the generated class also implements the `SharedPreferences` interface.
-
-Chaining it all together `edit().putX(x).putString("custom", "string").putY(y).apply()` works exactly as one would suspect.
+* Easy access to custom preferences.
+* Compatibility with other classes / libraries by implementing `SharedPreferences`.
+* Chained calls with `edit()` including all custom fields.
 
 ## How does it work
-By annotating an interface the processor will generate a preference class, implementing the `SharedPreferences` interface.
-All String variables defined in the interface will generate setter and getter methods for the properties, as well as chained methods
-in the `edit()` call.
+Annotate an interface with `@SharedPreference` and it will generate a class to access in
+the interface defined properties.
 
     @SharedPreference
     public interface Test {
-      String PASSWORD = "password"; // all fields in interfaces are final static
-      static String USERNAME = "username"; // this will create accessors for a string preference "username"
-      
-      @Type(PreferenceType.INTEGER)
-      final static String random = "random";
-      
-      @Type(PreferenceType.BOOLEAN)
-      final static String random = "random";
+        final static String USERNAME = "username";
+        static String PASSWORD = "password";
+        @Type(PreferenceType.BOOLEAN)
+        final String shown = "shown";
+    
+        String MY_COOL_SETTING = "setting";
+    }
+    
+This will generate lots of code,
+including javadoc for custom fields and implementations for the
+interfaces.
+
+An extract in the following.
+
+    public class TestPrefs
+        implements Test, SharedPreferences {
+            ...
+            
+        public String getMyCoolSetting(String defaultValue) {
+            return getString("setting", defaultValue);
+        }
+        
+        public void setMyCoolSetting(String value) {
+            edit().putString("myCoolSetting", value).apply();
+        }
+        ...
+        public boolean isShown(boolean defaultValue) {
+            return getBoolean("shown", defaultValue);
+        }
+        
+        public void setShown(boolean value) {
+            edit().putBoolean("shown", value).apply();
+        }
+            ...
+        public static class TestEditor
+            implements Editor {
+                
+                ...
+                
+            public TestEditor setShown(boolean value) {
+                mEditor.putBoolean("shown", value);
+                return this;
+            }
+            
+                ...
+        }
     }
 
-Further annotations for customization options are available to change the data type (defaults to String) and making other settings.  
-Non-String Fields will be ignored, but a warning will be issued.
+## Customization
+All naming is customizable, there are more preferences and options to use. Just see the Javadoc.
 
 ## Include in Project
+I am currently working to get the project into maven central.
 
