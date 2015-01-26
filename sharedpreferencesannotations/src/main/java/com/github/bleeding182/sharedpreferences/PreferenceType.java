@@ -28,11 +28,11 @@ package com.github.bleeding182.sharedpreferences;
  * The usable types of the properties in the preferences. Used to set the return type
  * and parameters.
  * <p>
- * {@link #BOOLEAN}<br/>
- * {@link #FLOAT}<br/>
- * {@link #INTEGER}<br/>
- * {@link #LONG}<br/>
- * {@link #STRING}<br/>
+ * {@link #BOOLEAN}</p><p>
+ * {@link #FLOAT}</p><p>
+ * {@link #INTEGER}</p><p>
+ * {@link #LONG}</p><p>
+ * {@link #STRING}</p><p>
  * {@link #STRING_SET}</p>
  *
  * @author David Medenjak
@@ -41,31 +41,37 @@ package com.github.bleeding182.sharedpreferences;
 public enum PreferenceType {
     /**
      * Standard java boolean.
+     *
      * @see java.lang.Boolean
      */
     BOOLEAN,
     /**
      * Standard java floating point number.
+     *
      * @see java.lang.Float
      */
     FLOAT,
     /**
      * Standard java number.
+     *
      * @see java.lang.Integer
      */
     INTEGER,
     /**
      * Standard java long.
+     *
      * @see java.lang.Long
      */
     LONG,
     /**
      * Standard java String.
+     *
      * @see java.lang.String
      */
     STRING,
     /**
      * A set of Strings.
+     *
      * @see java.lang.String
      * @see java.util.Set
      */
@@ -73,6 +79,7 @@ public enum PreferenceType {
 
     /**
      * Method to supply the spelling for the type as a return type.
+     *
      * @return the type as String usable for method declarations.
      */
     public String getReturnType() {
@@ -95,6 +102,7 @@ public enum PreferenceType {
 
     /**
      * Method to supply the type as a String used for the getter methods. e.g. <em>getString()</em>
+     *
      * @return the type as String, CamelCase.
      */
     public String getFullName() {

@@ -30,12 +30,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to generate a default wrapper class for the annotated interface.
+ * <p>Annotation to generate a default wrapper class for the annotated interface.
  * Supply a String value
  * to change the name of the genereated class to <i>value</i>Prefs and <i>value</i>Editor.
- * <p/>
+ * </p>
  * <p>By not specifying a value <i>DefaultPrefs</i> and <i>DefaultEditor</i> will be generated.</p>
- * <p/>
+ * 
  * <p>Additionally you may change the class name suffixes by setting {@link #preferencesSuffix()}
  * or {@link #editorSuffix()}.</p>
  */

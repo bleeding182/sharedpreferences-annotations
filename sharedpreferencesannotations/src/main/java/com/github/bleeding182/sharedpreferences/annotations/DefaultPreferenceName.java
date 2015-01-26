@@ -30,7 +30,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Default name of the preferences file.<br/>
+ * <p>Default name of the preferences file.</p>
  * Used to set the default name for the preferences file
  * using the <em>new Prefs(Context ctx)</em> constructor.
  *

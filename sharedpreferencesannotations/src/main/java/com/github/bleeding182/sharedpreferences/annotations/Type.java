@@ -32,8 +32,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The preferences type of this single property.
- * The getter and setter will be genereated with the supplied type.<br/>
+ * <p>The preferences type of this single property.
+ * The getter and setter will be genereated with the supplied type.</p>
  * Supported types are of {@link com.github.bleeding182.sharedpreferences.PreferenceType}
  *
  * @author David Medenjak

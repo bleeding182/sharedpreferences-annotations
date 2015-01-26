@@ -28,7 +28,8 @@ buildscript {
 }
 
 apply plugin: 'java'
-apply plugin: 'maven-publish'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -37,14 +38,73 @@ dependencies {
     compile 'com.google.android:android:4.1.1.4'
 }
 
-group = 'com.github.bleeding182.sharedpreferences'
-version = '1.0.0-rc.1'
+archivesBaseName = "processor"
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = 'annotationprocessor'
-            from components.java
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'SharedPreferences Annotation Processor'
+                packaging 'jar'
+                // optionally artifactId can be defined here
+                description 'Annotation Processor to generate wrapped SharedPreferences with custom accessor methods.'
+                url 'https://github.com/bleeding182/sharedpreferences-annotations'
+
+                scm {
+                    connection 'scm:git:ssh://git@github.com/bleeding182/sharedpreferences-annotations.git'
+                    developerConnection 'scm:git:ssh://git@github.com/bleeding182/sharedpreferences-annotations.git'
+                    url 'https://github.com/bleeding182/sharedpreferences-annotations'
+                }
+
+                licenses {
+                    license {
+                        name 'MIT License'
+                        url 'http://www.opensource.org/licenses/mit-license.php'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'bleeding182'
+                        name 'David Medenjak'
+                        email 'davidmedenjak@gmail.com'
+                        url 'https://github.com/bleeding182 '
+                        roles {
+                            role 'owner'
+                            role 'developer'
+                        }
+                        timezone '+1'
+                    }
+                }
+            }
         }
     }
 }

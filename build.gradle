@@ -16,4 +16,6 @@ allprojects {
     repositories {
         jcenter()
     }
+    group = 'com.github.bleeding182.sharedpreferences'
+    version = '1.0.0'
 }
