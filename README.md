@@ -13,6 +13,8 @@ supporting custom accessor methods by using an annotation processor.
 Annotate an interface with `@SharedPreference` and it will generate a class to access in
 the interface defined properties.
 
+The field name is used for the accessor methods names, the String value of the field is the key of the preference.
+
     @SharedPreference
     public interface Test {
         final static String USERNAME = "username";
@@ -24,10 +26,12 @@ the interface defined properties.
     }
     
 This will generate lots of code,
-including javadoc for custom fields and implementations for the
-interfaces.
+including javadoc for custom fields and implementations for the interfaces.
 
-An extract in the following.
+*e.g.* MY_COOL_SETTING will generate *getMyCoolSetting*, and *setMyCoolSetting*.  
+'_' acts as a seperator, introducing CamelCase in the accessors.
+
+An extract of the generated code (stripped of javaDoc)
 
     public class TestPrefs
         implements Test, SharedPreferences {
@@ -67,5 +71,25 @@ An extract in the following.
 All naming is customizable, there are more preferences and options to use. Just see the Javadoc.
 
 ## Include in Project
-I am currently working to get the project into maven central.
+Add the following lines to your `build.gradle`
 
+    buildscript {
+        repositories {
+            mavenCentral()
+        }
+    
+        dependencies {
+            classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+        }
+    }
+    apply plugin: 'com.android.application'
+    apply plugin: 'com.neenbedankt.android-apt'
+    
+    repositories {
+        mavenCentral()
+    }
+    
+    dependencies {
+        apt 'com.github.bleeding182.sharedpreferences:processor:1.0.0'
+        compile 'com.github.bleeding182.sharedpreferences:annotations:1.0.0'
+    }
