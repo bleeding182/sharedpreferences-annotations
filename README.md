@@ -1,5 +1,3 @@
-***This library is currently a work in progress, busy working on v1.0.0***
-
 # Shared Preferences Annotations
 This library is used to create a simple wrapper class around SharedPreferences for Android,
 supporting custom accessor methods by using an annotation processor.
