@@ -43,13 +43,16 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface DefaultValue {
     /**
-     * Supplies the default value to use for a preference in String format. e.g. "3.0f", "hi", ...
+     * <p>Supplies the default value to use for a preference in String format. e.g. "3.0f", "hi", ...</p>
+     * Currently the support is somewhat limited, as it will not parse or check the entered text.
+     *
      * @return the value to use as String.
      */
     String value();
 
     /**
      * Used to specify the creation of the default getter of the form <em>get(Type defaultValue)</em>.
+     *
      * @return default true, to create the default getter nonetheless.
      */
     boolean createDefaultGetter() default true;

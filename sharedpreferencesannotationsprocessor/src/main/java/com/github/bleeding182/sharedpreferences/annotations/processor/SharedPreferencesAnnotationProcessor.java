@@ -24,6 +24,8 @@
 
 package com.github.bleeding182.sharedpreferences.annotations.processor;
 
+import com.github.bleeding182.sharedpreferences.annotations.SharedPreference;
+
 import java.io.IOException;
 import java.util.Set;
 
@@ -36,30 +38,35 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
-import com.github.bleeding182.sharedpreferences.annotations.SharedPreference;
 
-
+/**
+ * This class defines the annotation processor called by the apt tool.
+ * It will verify that it is in fact an interface, then it will call the Helper class.
+ */
 @SupportedAnnotationTypes("com.github.bleeding182.sharedpreferences.annotations.SharedPreference")
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class SharedPreferencesAnnotationProcessor extends AbstractProcessor {
 
+    /**
+     * Process method called for every item annotated by {@link com.github.bleeding182.sharedpreferences.annotations.SharedPreference}.
+     *
+     * @param annotations the annotation types requested to be processed
+     * @param roundEnv    - environment for information about the current and prior round
+     * @return whether or not the set of annotation types are claimed by this processor
+     */
     @Override
     public boolean process(Set<? extends TypeElement> annotations,
                            RoundEnvironment roundEnv) {
         for (Element e : roundEnv.getElementsAnnotatedWith(SharedPreference.class)) {
-            if (e.getKind().isField()) {
+            if (e.getKind().isField() || e.getKind().isClass()) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Just interfaces annotated by @SharedPreference are supported.", e);
                 continue;
-            }
-            if (e.getKind().isClass()) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, "Just interfaces annotated by @SharedPreference are supported.", e);
             }
             PreferenceHolder prefHolder;
             try {
                 prefHolder = new PreferenceHolder((TypeElement) e, processingEnv.getFiler(), processingEnv.getMessager());
                 prefHolder.write();
             } catch (IOException ex) {
-                ex.printStackTrace();
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, ex.getMessage(), e);
             }
         }

@@ -35,7 +35,6 @@ import java.lang.annotation.Target;
  * to change the name of the genereated class to <i>value</i>Prefs and <i>value</i>Editor.
  * </p>
  * <p>By not specifying a value <i>DefaultPrefs</i> and <i>DefaultEditor</i> will be generated.</p>
- * 
  * <p>Additionally you may change the class name suffixes by setting {@link #preferencesSuffix()}
  * or {@link #editorSuffix()}.</p>
  */
@@ -44,23 +43,39 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface SharedPreference {
     /**
-     * the prefix for the generated preferences and editor.
-     *
-     * @return the prefix, the name of the annotated interface by default.
+     * Constant used by the annotation processor to identify empty fields.
      */
-    String value() default "";
+    final public static String EMPTY = "*empty*";
 
     /**
-     * the suffix for the preferences.
+     * <p>Defines the name of the generated wrapper Class.
+     * It is the prefix with {@link #preferencesSuffix()} and {@link #editorSuffix()} appended accordingly.</p>
+     * <p>If no value is set it defaults to the interfaces name.</p>
+     * <p>For easy access it can be set by {@code @SharedPreference("Custom")} which will generate
+     * {@code CustomPrefs} and {@code CustomEditor} </p>
      *
-     * @return the suffix, "Prefs" by default.
+     * @return the prefix of the generated classe. By default the name of the annotated interface.
+     */
+    String value() default EMPTY;
+
+    /**
+     * The suffix for the generated preferences class.
+     *
+     * @return the suffix, {@code "Prefs"} by default.
      */
     String preferencesSuffix() default "Prefs";
 
     /**
-     * the suffix for the editor.
+     * The suffix for the generated editor inner class.
      *
-     * @return the suffix, "Editor" by default.
+     * @return the suffix, {@code "Editor"} by default.
      */
     String editorSuffix() default "Editor";
+
+    /**
+     * Set this property to move the generated class to another package.
+     *
+     * @return the packagename of the generated class. By default the package of the annotated interface will be used.
+     */
+    String packagename() default EMPTY;
 }

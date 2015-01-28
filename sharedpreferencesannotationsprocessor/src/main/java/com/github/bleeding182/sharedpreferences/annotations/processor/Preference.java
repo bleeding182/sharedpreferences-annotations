@@ -24,6 +24,9 @@
 
 package com.github.bleeding182.sharedpreferences.annotations.processor;
 
+import com.github.bleeding182.sharedpreferences.PreferenceType;
+import com.github.bleeding182.sharedpreferences.annotations.DefaultValue;
+import com.github.bleeding182.sharedpreferences.annotations.Type;
 import com.squareup.javawriter.JavaWriter;
 
 import java.io.IOException;
@@ -33,15 +36,11 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 
-import com.github.bleeding182.sharedpreferences.PreferenceType;
-import com.github.bleeding182.sharedpreferences.annotations.DefaultValue;
-import com.github.bleeding182.sharedpreferences.annotations.Type;
-
 /**
  * @author David Medenjak
  * @version 1.0
  */
-public class Preference {
+class Preference {
     private static final Set<Modifier> setPublic;
 
     static {
@@ -54,14 +53,15 @@ public class Preference {
 
     private final VariableElement mElement;
     private final PreferenceType mType;
-    private final String mPreferenceName;
-    private final String mPreferenceId;
+    private final String mAccessorName;
+    private final String mPreferenceKey;
     private final String mBooleanPrefix;
     private final boolean hasDefaultValue;
     private final boolean createDefaultGetter;
     private final String mDefaultValue;
+    private final String mFieldName;
 
-    public static String camelCaseName(String name) {
+    static String camelCaseName(String name) {
         String[] split = name.toLowerCase().split("_");
         String ret = split[0];
         for (int i = 1; i < split.length; i++) {
@@ -70,9 +70,10 @@ public class Preference {
         return ret;
     }
 
-    public Preference(String preferenceName, String preferenceId, VariableElement element, PreferenceType defaultType) {
-        mPreferenceName = preferenceName;
-        mPreferenceId = preferenceId;
+    Preference(String fieldName, String accessorName, String preferenceKey, VariableElement element, PreferenceType defaultType) {
+        mFieldName = fieldName;
+        mAccessorName = accessorName;
+        mPreferenceKey = preferenceKey;
         mElement = element;
         Type type = element.getAnnotation(Type.class);
         if (type == null) {
@@ -95,41 +96,57 @@ public class Preference {
         }
     }
 
-    public VariableElement getElement() {
+    VariableElement getElement() {
         return mElement;
     }
 
-    public void writeGetter(JavaWriter writer) throws IOException {
+    void writeGetter(JavaWriter writer) throws IOException {
         final String prefix = mType == PreferenceType.BOOLEAN ? mBooleanPrefix : "get";
 
         // Create getter() for default value
         if (hasDefaultValue) {
-            writer.emitEmptyLine().emitJavadoc("gets '%s' from the preferences, <b>%s</b> by default if not yet set.", mPreferenceId, mDefaultValue)
+            writer.emitEmptyLine().emitJavadoc("Getter for the value stored under the key {@code %1$s} in the preferences.\n" +
+                    "The method will return {@code %2$s} if no other value has been set.\n\n" +
+                    "@return the value stored under {@code %1$s} in the preferences", mPreferenceKey, mDefaultValue)
                     .beginMethod(mType.getReturnType(), prefix + getPreferenceNameUpperFirst(), setPublic)
-                    .emitStatement("return get%1$s(\"%2$s\", %3$s)", mType.getFullName(), mPreferenceId, mDefaultValue).endMethod();
+                    .emitStatement("return get%1$s(%2$s, %3$s)",
+                            mType.getFullName(), mFieldName, getTypedString(mDefaultValue)).endMethod();
         }
-        if(!createDefaultGetter)
+        if (!createDefaultGetter)
             return;
-        writer.emitEmptyLine().emitJavadoc("gets '%s' from the preferences.\n@param %s the default value to use", mPreferenceId, PARAM_DEFAULT_VALUE)
+        writer.emitEmptyLine().emitJavadoc("Getter for the value stored under the key {@code %1$s} in the preferences.\n\n" +
+                "@param %2$s the default value to use if no value has previously been set\n" +
+                "@return the value stored under {@code %1$s} in the preferences", mPreferenceKey, PARAM_DEFAULT_VALUE)
                 .beginMethod(mType.getReturnType(), prefix + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), PARAM_DEFAULT_VALUE)
-                .emitStatement("return get%1$s(\"%2$s\", %3$s)", mType.getFullName(), mPreferenceId, PARAM_DEFAULT_VALUE).endMethod();
+                .emitStatement("return get%1$s(%2$s, %3$s)", mType.getFullName(), mFieldName, PARAM_DEFAULT_VALUE).endMethod();
     }
 
-    public String getPreferenceNameUpperFirst() {
-        return Character.toUpperCase(mPreferenceName.charAt(0)) + mPreferenceName.substring(1);
+    private String getTypedString(String value) {
+        switch (mType) {
+            case STRING:
+                return "\"" + value + "\"";
+            default:
+                return value;
+        }
     }
 
-    public void writeSetter(JavaWriter writer) throws IOException {
-        writer.emitEmptyLine().emitJavadoc("sets '%1$s' in the preferences.\n@param %2$s the new value for '%1$s'", mPreferenceId, VALUE)
+    private String getPreferenceNameUpperFirst() {
+        return Character.toUpperCase(mAccessorName.charAt(0)) + mAccessorName.substring(1);
+    }
+
+    void writeSetter(JavaWriter writer) throws IOException {
+        writer.emitEmptyLine().emitJavadoc("Sets the value for key {@code %1$s} in the preferences.\n\n" +
+                "@param %2$s the new value for {@code%1$s}", mPreferenceKey, VALUE)
                 .beginMethod("void", "set" + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), VALUE)
-                .emitStatement("edit().put%1$s(\"%2$s\", %3$s).apply()", mType.getFullName(), mPreferenceName, VALUE)
+                .emitStatement("edit().put%1$s(%2$s, %3$s).apply()", mType.getFullName(), mFieldName, VALUE)
                 .endMethod();
     }
 
-    public void writeChainSetter(JavaWriter writer, String editorType, String editor) throws IOException {
-        writer.emitEmptyLine().emitJavadoc("sets '%1$s' in the preferences.\n@param %2$s the new value for '%1$s'", mPreferenceId, VALUE)
+    void writeChainSetter(JavaWriter writer, String editorType, String editor) throws IOException {
+        writer.emitEmptyLine().emitJavadoc("Sets the value for key {@code %1$s} in the preferences.\n\n" +
+                "@param %2$s the new value for {@code %1$s}", mPreferenceKey, VALUE)
                 .beginMethod(editorType, "set" + getPreferenceNameUpperFirst(), setPublic, mType.getReturnType(), VALUE)
-                .emitStatement("%1$s.put%2$s(\"%3$s\", %4$s)", editor, mType.getFullName(), mPreferenceName, VALUE)
+                .emitStatement("%1$s.put%2$s(%3$s, %4$s)", editor, mType.getFullName(), mFieldName, VALUE)
                 .emitStatement("return this")
                 .endMethod();
     }
