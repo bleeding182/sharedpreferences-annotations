@@ -1,4 +1,4 @@
-# Shared Preferences Annotations
+# Shared Preferences Annotations [![Circle CI](https://circleci.com/gh/bleeding182/sharedpreferences-annotations.svg?style=shield)](https://circleci.com/gh/bleeding182/sharedpreferences-annotations)
 This library is used to create a simple wrapper class around SharedPreferences for Android,
 supporting custom accessor methods by using an annotation processor.
 
