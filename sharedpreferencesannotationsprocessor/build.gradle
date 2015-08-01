@@ -58,6 +58,9 @@ signing {
     sign configurations.archives
 }
 
+def ossrhUsername = System.properties['ossrhUsername']
+def ossrhPassword = System.properties['ossrhPassword']
+
 uploadArchives {
     repositories {
         mavenDeployer {
