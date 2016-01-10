@@ -111,6 +111,7 @@ public class PreferenceClassWriter {
             case "java.util.Set<java.lang.String>":
             case "java.util.Set<String>":
             case "Set<String>":
+            case "Set<java.lang.String>":
                 return "StringSet";
             case "int":
                 return "Int";
@@ -144,7 +145,7 @@ public class PreferenceClassWriter {
         mWriter.emitEmptyLine();
 
         for (Setting setting : mPreference.getSettings()) {
-            if(setting.getType().equals("java.util.Set<java.lang.String>")) {
+            if (setting.getType().equals("java.util.Set<java.lang.String>")) {
                 mWriter.emitImports(Set.class);
                 mWriter.emitEmptyLine();
                 break;
