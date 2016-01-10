@@ -108,7 +108,9 @@ public class PreferenceClassWriter {
                 return "Boolean";
             case "float":
                 return "Float";
+            case "java.util.Set<java.lang.String>":
             case "java.util.Set<String>":
+            case "Set<String>":
                 return "StringSet";
             case "int":
                 return "Int";
@@ -140,6 +142,14 @@ public class PreferenceClassWriter {
     private void emitImports() throws IOException {
         mWriter.emitImports("android.content.SharedPreferences");
         mWriter.emitEmptyLine();
+
+        for (Setting setting : mPreference.getSettings()) {
+            if(setting.getType().equals("java.util.Set<java.lang.String>")) {
+                mWriter.emitImports(Set.class);
+                mWriter.emitEmptyLine();
+                break;
+            }
+        }
 
         if (mPreference.getInterface().length() == mWriter.compressType(mPreference.getInterface()).length()) {
             mWriter.emitImports((mPreference.getInterface()));
