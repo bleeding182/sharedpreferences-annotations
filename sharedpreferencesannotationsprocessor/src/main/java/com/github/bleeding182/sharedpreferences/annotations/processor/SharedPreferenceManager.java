@@ -27,7 +27,6 @@ public class SharedPreferenceManager {
 
 
     public void writePreferences(Filer filer, Messager messager) throws IOException {
-
         for (TypeElement prefType : mPreferences) {
             Preference preference = new Preference(prefType);
             JavaFileObject jfo = filer.createSourceFile(preference.getPackage() + "." + preference.getImplementationName());
@@ -35,5 +34,10 @@ public class SharedPreferenceManager {
             PreferenceClassWriter writer = new PreferenceClassWriter(preference, mWriter);
             writer.write();
         }
+        mPreferences.clear();
+    }
+
+    public int getCount() {
+        return mPreferences.size();
     }
 }

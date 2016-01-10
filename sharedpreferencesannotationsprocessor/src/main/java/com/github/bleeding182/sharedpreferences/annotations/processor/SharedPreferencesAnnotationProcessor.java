@@ -70,6 +70,7 @@ public class SharedPreferencesAnnotationProcessor extends AbstractProcessor {
             }
             manager.addPreference((TypeElement) e);
         }
+
         try {
             manager.writePreferences(processingEnv.getFiler(), processingEnv.getMessager());
         } catch (IOException e) {
