@@ -131,9 +131,14 @@ public class PreferenceClassWriter {
         mWriter.emitField("SharedPreferences", PREFERENCES, privateModifier);
         mWriter.emitEmptyLine();
 
-        if (mPreference.doAnnotateConstructorInject()) {
+        try {
+            // http://stackoverflow.com/a/34597701/1837367
+            Class.forName("javax.inject.Inject");
             mWriter.emitAnnotation("Inject");
+        } catch (ClassNotFoundException e) {
+            // no inject present
         }
+
         mWriter.beginConstructor(modifier, "SharedPreferences", prefParameter);
         mWriter.emitStatement("%s = %s", PREFERENCES, prefParameter);
         mWriter.endConstructor();
@@ -157,9 +162,12 @@ public class PreferenceClassWriter {
             mWriter.emitEmptyLine();
         }
 
-        if (mPreference.doAnnotateConstructorInject()) {
+        try {
+            Class.forName("javax.inject.Inject");
             mWriter.emitImports("javax.inject.Inject");
             mWriter.emitEmptyLine();
+        } catch (ClassNotFoundException e) {
+            // no inject present
         }
     }
 
