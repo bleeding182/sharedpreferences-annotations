@@ -45,7 +45,7 @@ public @interface SharedPreference {
     /**
      * Constant used by the annotation processor to identify empty fields.
      */
-    final public static String EMPTY = "*empty*";
+    String EMPTY = "*empty*";
 
     /**
      * <p>Defines the name of the generated wrapper Class.

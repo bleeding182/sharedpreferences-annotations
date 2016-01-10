@@ -1,1 +1,1 @@
-include ':sharedpreferencesannotations', ':sharedpreferencesannotationsprocessor'
+include ':sharedpreferencesannotations', ':sharedpreferencesannotationsprocessor', ':test'
