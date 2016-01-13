@@ -16,5 +16,3 @@ env:
 before_install:
 - openssl aes-256-cbc -K $encrypted_c37544d41cab_key -iv $encrypted_c37544d41cab_iv
   -in pgp-david.gpg.enc -out pgp-david.gpg -d
-- openssl aes-256-cbc -K $encrypted_90cc8819bfd9_key -iv $encrypted_90cc8819bfd9_iv
-  -in pgp-david.gpg.enc -out pgp-david.gpg -d
