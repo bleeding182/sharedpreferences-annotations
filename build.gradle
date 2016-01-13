@@ -12,6 +12,10 @@ buildscript {
     }
 }
 
+ext."signing.keyId" = SIGNING_KEY_ID
+ext."signing.password" = SIGNING_PASSWORD
+ext."signing.secretKeyRingFile" = SIGNING_KEY_FILE
+
 allprojects {
     repositories {
         jcenter()
