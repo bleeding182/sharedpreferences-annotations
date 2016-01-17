@@ -65,7 +65,8 @@ public class SharedPreferencesAnnotationProcessor extends AbstractProcessor {
                            RoundEnvironment roundEnv) {
         for (Element e : roundEnv.getElementsAnnotatedWith(SharedPreference.class)) {
             if (!e.getKind().isInterface()) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Just interfaces annotated by @SharedPreference are supported.", e);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                        "Only interfaces annotated with @SharedPreference are supported.", e);
                 continue;
             }
             manager.addPreference((TypeElement) e);

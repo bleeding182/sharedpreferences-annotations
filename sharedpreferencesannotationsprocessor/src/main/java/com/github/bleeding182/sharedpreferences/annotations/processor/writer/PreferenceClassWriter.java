@@ -157,7 +157,8 @@ public class PreferenceClassWriter {
             }
         }
 
-        if (mPreference.getInterface().length() == mWriter.compressType(mPreference.getInterface()).length()) {
+        if (mPreference.getInterface().length() == mWriter.compressType(mPreference.getInterface()).length()
+                && !mPreference.getPackage().isEmpty()) {
             mWriter.emitImports((mPreference.getInterface()));
             mWriter.emitEmptyLine();
         }
@@ -174,8 +175,10 @@ public class PreferenceClassWriter {
     private void emitPackageAndHeader() throws IOException {
         mWriter.emitSingleLineComment("generated with sharedpreference-annotations v2.0")
                 .emitSingleLineComment("for more information see https://github.com/bleeding182/sharedpreferences-annotations")
-                .emitEmptyLine()
-                .emitPackage(mPreference.getPackage())
+                .emitEmptyLine();
+
+        String packageName = mPreference.getPackage();
+        mWriter.emitPackage(packageName)
                 .emitEmptyLine();
     }
 }
