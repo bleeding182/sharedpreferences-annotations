@@ -1,6 +1,7 @@
 package com.github.bleeding182.sharedpreferences.annotations.processor.writer;
 
 
+import com.github.bleeding182.sharedpreferences.annotations.processor.SharedPreferencesAnnotationProcessor;
 import com.squareup.javawriter.JavaWriter;
 
 import java.io.IOException;
@@ -40,6 +41,8 @@ public class PreferenceClassWriter {
         modifier.add(Modifier.PUBLIC);
         String implementedPreference = mWriter.compressType(mPreference.getInterface());
 
+
+        mWriter.emitAnnotation("javax.annotation.Generated(\"" + SharedPreferencesAnnotationProcessor.class.getCanonicalName() + "\")");
         mWriter.beginType(mPreference.getImplementationName(), "class", modifier, null, implementedPreference);
         mWriter.emitEmptyLine();
 
@@ -48,6 +51,10 @@ public class PreferenceClassWriter {
 
         for (Setting setting : mPreference.getSettings()) {
             ArrayList<ExecutableElement> names = setting.getMethods();
+
+            if (setting.getType() == null) {
+                continue;
+            }
 
             String type = mWriter.compressType(setting.getType());
             if (type == null) {
@@ -150,7 +157,8 @@ public class PreferenceClassWriter {
         mWriter.emitEmptyLine();
 
         for (Setting setting : mPreference.getSettings()) {
-            if (setting.getType().equals("java.util.Set<java.lang.String>")) {
+            String type = setting.getType();
+            if (type != null && type.equals("java.util.Set<java.lang.String>")) {
                 mWriter.emitImports(Set.class);
                 mWriter.emitEmptyLine();
                 break;
@@ -163,6 +171,7 @@ public class PreferenceClassWriter {
             mWriter.emitEmptyLine();
         }
 
+        mWriter.emitImports("javax.annotation.Generated");
         try {
             Class.forName("javax.inject.Inject");
             mWriter.emitImports("javax.inject.Inject");
@@ -173,10 +182,6 @@ public class PreferenceClassWriter {
     }
 
     private void emitPackageAndHeader() throws IOException {
-        mWriter.emitSingleLineComment("generated with sharedpreference-annotations v2.0")
-                .emitSingleLineComment("for more information see https://github.com/bleeding182/sharedpreferences-annotations")
-                .emitEmptyLine();
-
         String packageName = mPreference.getPackage();
         mWriter.emitPackage(packageName)
                 .emitEmptyLine();

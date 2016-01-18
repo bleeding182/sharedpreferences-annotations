@@ -14,6 +14,7 @@ import javax.annotation.processing.Processor;
 import javax.tools.StandardLocation;
 
 import static com.google.common.truth.Truth.assert_;
+import static com.google.testing.compile.JavaFileObjects.forSourceLines;
 import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
 
 ;
@@ -74,13 +75,14 @@ public class IntegrationTest {
                 .processedWith(mProcessor)
                 .compilesWithoutError()
                 .and()
-                .generatesSources(JavaFileObjects.forSourceLines("com.SPPreferences",
+                .generatesSources(forSourceLines("com.SPPreferences",
                         "package com;",
                         "import android.content.SharedPreferences;",
+                        "import javax.annotation.Generated;",
+                        "@Generated(\"" + SharedPreferencesAnnotationProcessor.class.getCanonicalName() + "\"",
                         "public class SPPreferences implements Preferences {",
                         "private final SharedPreferences mPreferences;",
                         "public SPPreferences(SharedPreferences preferences) { mPreferences = preferences; }",
                         "}"));
     }
-
 }
