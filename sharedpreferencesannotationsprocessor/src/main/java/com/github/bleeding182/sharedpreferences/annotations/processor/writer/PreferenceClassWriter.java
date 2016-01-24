@@ -14,6 +14,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * @author David Medenjak on 1/10/2016.
@@ -79,7 +80,7 @@ public class PreferenceClassWriter {
                 if (isGetter) {
                     mWriter.emitStatement("return %s.get%s(\"%s\", %s)", PREFERENCES, typePreferenceName,
                             setting.getName(), parameters.size() > 0 ?
-                                    parameters.get(1) : getDefaultValue(method.getReturnType().getKind()));
+                                    parameters.get(1) : getDefaultValue(method.getReturnType()));
                 } else {
                     mWriter.emitStatement("%s.edit().put%s(\"%s\", %s).apply()", PREFERENCES, typePreferenceName,
                             setting.getName(), parameters.get(1));
@@ -94,8 +95,8 @@ public class PreferenceClassWriter {
         mWriter.close();
     }
 
-    private String getDefaultValue(TypeKind kind) {
-        switch (kind) {
+    private String getDefaultValue(TypeMirror kind) {
+        switch (kind.getKind()) {
             case BOOLEAN:
                 return "false";
             case INT:
@@ -105,6 +106,16 @@ public class PreferenceClassWriter {
             case LONG:
                 return "0l";
             default:
+                break;
+        }
+        switch (kind.toString()) {
+            case "java.lang.Integer":
+                return "0";
+            case "java.lang.Double":
+                return "0d";
+            case "java.lang.Long":
+                return "0l";
+            default:
                 return "null";
         }
     }
@@ -112,8 +123,10 @@ public class PreferenceClassWriter {
     private String getSharedPreferenceSettingNameForType(String type) {
         switch (type) {
             case "boolean":
+            case "Boolean":
                 return "Boolean";
             case "float":
+            case "Float":
                 return "Float";
             case "java.util.Set<java.lang.String>":
             case "java.util.Set<String>":
@@ -121,8 +134,10 @@ public class PreferenceClassWriter {
             case "Set<java.lang.String>":
                 return "StringSet";
             case "int":
+            case "Integer":
                 return "Int";
             case "long":
+            case "Long":
                 return "Long";
             default:
                 return "String";

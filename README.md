@@ -1,5 +1,5 @@
 # Shared Preferences Annotations
-[![Circle CI](https://circleci.com/gh/bleeding182/sharedpreferences-annotations.svg?style=shield)](https://circleci.com/gh/bleeding182/sharedpreferences-annotations)
+[![Build Status](https://travis-ci.org/bleeding182/sharedpreferences-annotations.svg?branch=master)](https://travis-ci.org/bleeding182/sharedpreferences-annotations)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.bleeding182.sharedpreferences/processor/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.bleeding182.sharedpreferences/processor)
 
 This library is used to create a simple wrapper class around SharedPreferences for Android,

@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.lang.reflect.Type;
 import java.util.Set;
 
 import javax.annotation.processing.Processor;
